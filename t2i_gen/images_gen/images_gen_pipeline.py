@@ -4,7 +4,7 @@ import os
 import argparse
 from typing import Literal
 from torch.utils.data import Dataset, DataLoader
-from diffusers import ZImagePipeline, DiffusionPipeline, FluxPipeline, Flux2Pipeline, StableDiffusion3Pipeline, KolorsPipeline
+from diffusers import ZImagePipeline, DiffusionPipeline, FluxPipeline, Flux2Pipeline, StableDiffusion3Pipeline, KolorsPipeline, SanaPipeline
 
 from tqdm import tqdm
 
@@ -50,7 +50,8 @@ class GenSettings:
             # "FLUX.2-klein-4B": Flux2KleinPipeline,
             "SD3.5-large": StableDiffusion3Pipeline,
             "SD3.5-medium": StableDiffusion3Pipeline,
-            "Kolors": KolorsPipeline
+            "Kolors": KolorsPipeline,
+            "SANA1.5_4.8B": SanaPipeline
         }
         return name_to_pipeline_map
 
@@ -138,7 +139,7 @@ def generation_pipeline(
 
     for batch in dataloader:
         prompts, keys = batch
-        images = pipe(prompts, **opt.get_dict()).images
+        images = pipe(list(prompts), **opt.get_dict()).images
         for i, image in enumerate(images):
             image.save(os.path.join(save_path, f"{keys[i]}_{positive}.png"))
 
@@ -156,15 +157,22 @@ if __name__ ==  "__main__":
     parser.add_argument("--save_root", type=str, default="/root/fengyuan/datasets/vision_auto_rubric/images")
     args = parser.parse_args()
     
-    with open(st_file, "r") as f:
+    with open(args.st_file, "r") as f:
         gen_settings = json.load(f)
 
-    opt = GenSettings(args.model_name, kwargs=gen_settings[model_name])
+    opt = GenSettings(args.model_name, kwargs=gen_settings[args.model_name])
 
     dataloader = create_dataloader(
         json_file=args.data_file,
         prompt_choice=args.prompt_choice, 
         batch_size=args.batch_size
+    )
+
+    generation_pipeline(
+        opt=opt,
+        dataloader=dataloader,
+        positive=args.postive,
+        save_root=args.save_root,
     )
 
 
@@ -173,7 +181,7 @@ if __name__ ==  "__main__":
     # with open(st_file, "r") as f:
     #     gen_settings = json.load(f)
     # # print(gen_settings.keys())
-    # model_name = "Kolors"
+    # model_name = "SANA1.5_4.8B"
     # # print(gen_settings[model_name])
     # opt = GenSettings(model_name, kwargs=gen_settings[model_name])
     # img_gen_pipeline(opt)

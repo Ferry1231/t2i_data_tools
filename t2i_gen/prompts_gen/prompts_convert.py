@@ -8,7 +8,9 @@ json_path = "/root/fengyuan/datasets/HPDv3/test_rewritten.json"
 with open(json_path, "r") as f:
     file = json.load(f)
 
-print(file[12]['prompt'], '\n', file[12]['prompt_fault'])
+# print(file[20])
+
+print(file[20]['prompt'], '\n', file[20]['prompt_fault'])
 
 # for i, item in enumerate(tqdm(file)):
 #     item['path1'] = None

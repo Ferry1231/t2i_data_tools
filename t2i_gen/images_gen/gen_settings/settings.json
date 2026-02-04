@@ -85,6 +85,12 @@
         "model_path": "/root/fengyuan/models/Kolors",
         "num_inference_steps": 50,
         "guidance_scale": 5.0
+    },
+    "SANA1.5_4.8B":
+    {
+        "model_path": "/root/fengyuan/models/SANA1.5_4.8B",
+        "num_inference_steps": 20,
+        "guidance_scale": 4.5
     }
     
 }
