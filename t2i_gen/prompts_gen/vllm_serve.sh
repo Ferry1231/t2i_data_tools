@@ -1,0 +1,2 @@
+vllm serve /root/fengyuan/models/Qwen3-8B --port 8000 --max-model-len 40960 > qwen3_8b_vllm.log 2>&1 &
+vllm serve /root/fengyuan/models/Qwen3-4B-Instruct-2507 --port 8000 --max-model-len 40960 > qwen3_4b_instruct_2507_vllm.log 2>&1 &
