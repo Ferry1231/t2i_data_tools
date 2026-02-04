@@ -2,13 +2,13 @@ import json
 import matplotlib.pyplot as plt
 
 # 修改为你的JSON文件路径
-json_path = "/root/fengyuan/datasets/HPDv3/test.json"
+json_path = "/root/fengyuan/datasets/HPDv3/test_rewritten.json"
 
 def main():
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    lengths = [len(item.get("prompt", "").split()) for item in data]
+    lengths = [len(item.get("prompt", "").split()) for item in data if len(item.get("prompt", "").split()) <= 500]
 
     # 打印每条记录的长度
     for i, l in enumerate(lengths, 1):
@@ -29,7 +29,7 @@ def main():
     plt.ylabel("Frequency")
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.tight_layout()
-    plt.savefig("prompt_lengths_distribution_test.png")
+    plt.savefig("prompt_lengths_distribution_test_re.png")
 
 if __name__ == "__main__":
     main()

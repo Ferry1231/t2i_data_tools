@@ -2,12 +2,13 @@ import json
 import random
 from openai import OpenAI
 from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # -------------------------------
 # 配置
 # -------------------------------
-input_json_path = "/root/fengyuan/datasets/HPDv3/test.json"   # 原始 JSON 文件路径
-output_json_path = "/root/fengyuan/datasets/HPDv3/test_rewritten.json"  # 保存新文件路径
+input_json_path = "/root/fengyuan/datasets/HPDv3/train.json"   
+output_json_path = "/root/fengyuan/datasets/HPDv3/train_rewritten.json"  
 
 openai_api_key = "EMPTY"
 openai_api_base = "http://localhost:8000/v1"
@@ -50,39 +51,40 @@ with open(input_json_path, "r", encoding="utf-8") as f:
     data = json.load(f)
 
 # -------------------------------
-# 遍历每条记录并改写 prompt
+# 定义单条改写函数
 # -------------------------------
-new_data = []
-for idx, item in enumerate(tqdm(data, desc="Rewriting Prompts")):
+def rewrite_prompt(item):
     original_prompt = item.get("prompt", "")
-    
-    # 随机生成目标词数
-    target_words = random.randint(5, 100)
-    
-    # 构造改写 prompt
+    target_words = random.randint(10, 200)
     chat_prompt = prompts_template.format(TARGET_WORDS=target_words, PROMPT=original_prompt)
     
-    # 调用 vLLM/OpenAI API
     try:
         response = client.chat.completions.create(
             model="/root/fengyuan/models/Qwen3-8B",
             messages=[{"role": "user", "content": chat_prompt}],
             max_tokens=30000,
             temperature=3.0,
-            extra_body={
-                "chat_template_kwargs": {"enable_thinking": False},
-            },
+            extra_body={"chat_template_kwargs": {"enable_thinking": False}},
         )
         rewritten_prompt = response.choices[0].message.content.strip()
-        # print(f"[{idx}/{len(data)}] Original: {len(original_prompt.split())} words → Rewritten: {len(rewritten_prompt.split())} words")
     except Exception as e:
-        print(f"[{idx}/{len(data)}] Error rewriting prompt:", e)
-        rewritten_prompt = original_prompt  # 出错则保留原始 prompt
+        print("Error rewriting prompt:", e)
+        rewritten_prompt = original_prompt
 
-    # 保存改写后的记录
     new_item = item.copy()
     new_item["prompt"] = rewritten_prompt
-    new_data.append(new_item)
+    return new_item
+
+# -------------------------------
+# 多线程执行
+# -------------------------------
+new_data = []
+max_workers = 16  # 可以根据你的机器和 API 并发能力调整
+
+with ThreadPoolExecutor(max_workers=max_workers) as executor:
+    futures = {executor.submit(rewrite_prompt, item): idx for idx, item in enumerate(data)}
+    for future in tqdm(as_completed(futures), total=len(futures), desc="Rewriting Prompts"):
+        new_data.append(future.result())
 
 # -------------------------------
 # 保存新的 JSON 文件
