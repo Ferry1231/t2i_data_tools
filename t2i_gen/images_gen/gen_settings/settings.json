@@ -82,7 +82,7 @@
     },
     "Kolors":
     {
-        "model_path": "",
+        "model_path": "/root/fengyuan/models/Kolors",
         "num_inference_steps": 50,
         "guidance_scale": 5.0
     }

@@ -1,6 +1,12 @@
 import torch
 import json
+import os
+import argparse
+from typing import Literal
+from torch.utils.data import Dataset, DataLoader
 from diffusers import ZImagePipeline, DiffusionPipeline, FluxPipeline, Flux2Pipeline, StableDiffusion3Pipeline, KolorsPipeline
+
+from tqdm import tqdm
 
 
 class GenSettings:
@@ -49,10 +55,62 @@ class GenSettings:
         return name_to_pipeline_map
 
 
+class PromptDataset(Dataset):
+    def __init__(
+        self, 
+        prompts_file, 
+        prompt_choice: Literal['prompt', 'prompt_fault'],
+        key_choice: str = 'key'
+    ):
+        self.data = prompts_file
+        self.prompt_choice = prompt_choice
+        self.key_choice = key_choice
+
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, idx):
+        item = self.data[idx]
+        key = item[self.key_choice]
+        prompt = item[self.prompt_choice]
+        
+        return prompt, key
+
+
+def create_dataloader(
+    json_file: list,
+    prompt_choice: Literal['prompt', 'prompt_fault'] = 'prompt',
+    key_choice: str = 'key',
+    batch_size: int = 8,
+    shuffle: bool = True,
+    num_workers: int = 16,
+):  
+    with open(json_file, 'r') as f:
+        json_data = json.load(f)
+
+    dataset = PromptDataset(
+        prompts_file=json_data,
+        prompt_choice=prompt_choice,
+        key_choice=key_choice,
+    )
+
+    dataloader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        num_workers=num_workers,
+        drop_last=False,
+    )
+
+    return dataloader
+
 
 def img_gen_pipeline(opt: GenSettings, device="cuda"):
     pipeline = opt.get_pipeline()
-    prompt = "A 20-year-old East Asian girl with delicate, charming features and large, bright brown eyes—expressive and lively, with a cheerful or subtly smiling expression. Her naturally wavy long hair is either loose or tied in twin ponytails. She has fair skin and light makeup accentuating her youthful freshness. She wears a modern, cute dress or relaxed outfit in bright, soft colors—lightweight fabric, minimalist cut. She stands indoors at an anime convention, surrounded by banners, posters, or stalls. Lighting is typical indoor illumination—no staged lighting—and the image resembles a casual iPhone snapshot: unpretentious composition, yet brimming with vivid, fresh, youthful charm."
+    prompt = [
+        "Painting: A solitary woman stands on the shoreline, barefoot and still, as she gazes out at the vast open water of the lake. Tall mountains stand solemn and unwavering against the cerulean sky in the backdrop, their jagged edges caught in a soft golden light. Mist curling gently from the water's surface adds a hazy, tranquil atmosphere to the scene, while the gentle rustle of wind passing through surrounding trees enhances the peaceful ambience. The overall mood is one of calm reflection and quiet wonder, capturing an image that is both serene and evocative of the vastness of nature. ",
+        # "a flower"
+    ]
     pipe = pipeline.from_pretrained(
         opt.model_path,
         torch_dtype=opt.dtype
@@ -61,14 +119,62 @@ def img_gen_pipeline(opt: GenSettings, device="cuda"):
         prompt,
         **opt.get_dict()
     ).images[0]
-    image.save("example.png")
+    image.save(f"example_2_{opt.model_name}.png")
+
+
+def generation_pipeline(
+    opt: GenSettings, 
+    dataloader: DataLoader,
+    positive: Literal['positive', 'negative'],
+    save_root: str,
+    device="cuda"
+):  
+    model_name = opt.model_name
+    save_path = os.path.join(save_root, model_name)
+    os.makedirs(save_path, exist_ok=True)
+
+    pipeline = opt.get_pipeline()
+    pipe = pipeline.from_pretrained(opt.model_path, torch_dtype=opt.dtype).to(device)
+
+    for batch in dataloader:
+        prompts, keys = batch
+        images = pipe(prompts, **opt.get_dict()).images
+        for i, image in enumerate(images):
+            image.save(os.path.join(save_path, f"{keys[i]}_{positive}.png"))
+
+
+
 
 if __name__ ==  "__main__":
-    st_file = "/root/fengyuan/tools/t2i_data_tools/t2i_gen/images_gen/gen_settings/settings.json"
+    parser = argparse.ArgumentParser(description="Run prompt dataloader and image generation pipeline.")
+    parser.add_argument("--st_file", type=str, default="/root/fengyuan/tools/t2i_data_tools/t2i_gen/images_gen/gen_settings/settings.json")
+    parser.add_argument("--data_file", type=str, required=True)
+    parser.add_argument("--model_name", type=str, required=True)
+    parser.add_argument("--prompt_choice", type=str, required=True, choices=["prompt", "prompt_fault"], help="Which prompt field to use: 'prompt' or 'prompt_fault'.")
+    parser.add_argument("--postive", type=str, required=True, choices=["positive", "negative"])
+    parser.add_argument("--batch_size", type=int, default=8)
+    parser.add_argument("--save_root", type=str, default="/root/fengyuan/datasets/vision_auto_rubric/images")
+    args = parser.parse_args()
+    
     with open(st_file, "r") as f:
         gen_settings = json.load(f)
-    print(gen_settings.keys())
-    model_name = "SD3.5-medium"
-    print(gen_settings[model_name])
-    opt = GenSettings(model_name, kwargs=gen_settings[model_name])
-    img_gen_pipeline(opt)
+
+    opt = GenSettings(args.model_name, kwargs=gen_settings[model_name])
+
+    dataloader = create_dataloader(
+        json_file=args.data_file,
+        prompt_choice=args.prompt_choice, 
+        batch_size=args.batch_size
+    )
+
+
+
+    # st_file = "/root/fengyuan/tools/t2i_data_tools/t2i_gen/images_gen/gen_settings/settings.json"
+    # with open(st_file, "r") as f:
+    #     gen_settings = json.load(f)
+    # # print(gen_settings.keys())
+    # model_name = "Kolors"
+    # # print(gen_settings[model_name])
+    # opt = GenSettings(model_name, kwargs=gen_settings[model_name])
+    # img_gen_pipeline(opt)
+
