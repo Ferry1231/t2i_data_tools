@@ -37,3 +37,6 @@ python /root/fengyuan/tools/t2i_data_tools/t2i_gen/images_gen/images_gen_pipelin
     --data_file "/root/fengyuan/datasets/vision_auto_rubric/for_rubrics/negative/split_4.json" \
     --prompt_choice "prompt" \
     --postive "negative" 
+
+
+## sh run.sh > img_gen.log 2>&1 &
