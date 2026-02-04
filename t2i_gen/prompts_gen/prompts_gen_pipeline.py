@@ -7,8 +7,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 # -------------------------------
 # 配置
 # -------------------------------
-input_json_path = "/root/fengyuan/datasets/HPDv3/train.json"   
-output_json_path = "/root/fengyuan/datasets/HPDv3/train_rewritten.json"  
+input_json_path = "/root/fengyuan/datasets/HPDv3/test_rewritten.json"   
+output_json_path = "/root/fengyuan/datasets/HPDv3/test_rewritten.json"  
 
 openai_api_key = "EMPTY"
 openai_api_base = "http://localhost:8000/v1"
@@ -44,6 +44,31 @@ prompts_template = """
 请生成一个词数为 {TARGET_WORDS} 的版本。
 """
 
+prompts_template = """
+你是一名提示词优化助手。
+你的任务是：在尽量保持原始语义与主要视觉内容一致的前提下，**删减和精简**给定的 prompt，使其更简洁、图文更一致。
+
+---
+
+【要求】
+* 尽量删除对画面没有实质影响或可能导致偏离主题的词句。
+* 可适度调整语序、风格或布局，以提高 prompt 的表达效率和视觉一致性。
+* 允许轻微改变风格（如更自然、更直接），但不要改变画面的主要元素或语义。
+* 输出应语言自然、流畅、结构清晰。
+* 不要输出任何解释或多余说明，只输出修改后的 prompt。
+* 输出后的文本应大体比原 prompt 更短、更集中。
+
+---
+
+【输入】
+{PROMPT}
+
+---
+
+请输出一个经过删减与优化的版本。
+"""
+
+
 # -------------------------------
 # 读取 JSON 数据
 # -------------------------------
@@ -55,8 +80,9 @@ with open(input_json_path, "r", encoding="utf-8") as f:
 # -------------------------------
 def rewrite_prompt(item):
     original_prompt = item.get("prompt", "")
-    target_words = random.randint(10, 200)
-    chat_prompt = prompts_template.format(TARGET_WORDS=target_words, PROMPT=original_prompt)
+    # target_words = random.randint(10, 200)
+    # chat_prompt = prompts_template.format(TARGET_WORDS=target_words, PROMPT=original_prompt)
+    chat_prompt = prompts_template.format(PROMPT=original_prompt)
     
     try:
         response = client.chat.completions.create(
@@ -72,7 +98,8 @@ def rewrite_prompt(item):
         rewritten_prompt = original_prompt
 
     new_item = item.copy()
-    new_item["prompt"] = rewritten_prompt
+    # new_item["prompt"] = rewritten_prompt
+    new_item["prompt_fault"] = rewritten_prompt
     return new_item
 
 # -------------------------------

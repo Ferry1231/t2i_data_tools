@@ -21,6 +21,30 @@ prompts = """
 请生成一个词数为 {TARGET_WORDS} 的版本。
 """
 
+prompts = """
+你是一名提示词优化助手。
+你的任务是：在尽量保持原始语义与主要视觉内容一致的前提下，**删减和精简**给定的 prompt，使其更简洁、图文更一致。
+
+---
+
+【要求】
+* 尽量删除对画面没有实质影响或可能导致偏离主题的词句。
+* 可适度调整语序、风格或布局，以提高 prompt 的表达效率和视觉一致性。
+* 允许轻微改变风格（如更自然、更直接），但不要改变画面的主要元素或语义。
+* 输出应语言自然、流畅、结构清晰。
+* 不要输出任何解释或多余说明，只输出修改后的 prompt。
+* 输出后的文本应大体比原 prompt 更短、更集中。
+
+---
+
+【输入】
+{PROMPT}
+
+---
+
+请输出一个经过删减与优化的版本。
+"""
+
 
 from openai import OpenAI
 # Set OpenAI's API key and API base to use vLLM's API server.
@@ -35,7 +59,8 @@ client = OpenAI(
 chat_response = client.chat.completions.create(
     model="/root/fengyuan/models/Qwen3-8B",
     messages=[
-        {"role": "user", "content": prompts.format(TARGET_WORDS=100, PROMPT="Two men in white shirts and red suspenders kiss under a blossoming tree.")},
+        # {"role": "user", "content": prompts.format(TARGET_WORDS=100, PROMPT="Two men in white shirts and red suspenders kiss under a blossoming tree.")},
+        {"role": "user", "content": prompts.format(PROMPT="Two men in white shirts and red suspenders kiss under a blossoming tree.")},
     ],
     max_tokens=30000,
     temperature=3.0,
