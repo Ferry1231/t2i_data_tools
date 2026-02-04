@@ -1,0 +1,83 @@
+{
+    "Z-Image-Turbo":
+    {
+        "model_path": "",
+        "num_inference_steps": 9,
+        "guidance_scale": 0.0
+    },
+    "Z-Image":
+    {
+        "model_path": "",
+        "num_inference_steps": 50,
+        "guidance_scale": 4.0,
+        "cfg_normalization": false
+    },
+    "Qwen-Image-2512":
+    {
+        "model_path": "",
+        "num_inference_steps": 50,
+        "guidance_scale": 4.0
+    },
+    "FLUX.1-dev":
+    {
+        "model_path": "",
+        "num_inference_steps": 50,
+        "guidance_scale": 3.5
+    },
+    "FLUX.1-Krea-dev":
+    {
+        "model_path": "",
+        "num_inference_steps": 50,
+        "guidance_scale": 4.5
+    },
+    "FLUX.1-schnell":
+    {
+        "model_path": "",
+        "num_inference_steps": 4,
+        "guidance_scale": 0.0,
+        "max_sequence_length": 256
+    },
+    "FLUX.2-dev":
+    {
+        "model_path": "",
+        "num_inference_steps": 50,
+        "guidance_scale": 4.0
+    },
+    "FLUX.2-klein-9B-base":
+    {
+        "model_path": "",
+        "num_inference_steps": 50,
+        "guidance_scale": 4.0
+    },
+    "FLUX.2-klein-9B":
+    {
+        "model_path": "",
+        "num_inference_steps": 4,
+        "guidance_scale": 1.0
+    },
+    "FLUX.2-klein-4B-base":
+    {
+        "model_path": "",
+        "num_inference_steps": 50,
+        "guidance_scale": 4.0
+    },
+    "FLUX.2-klein-4B":
+    {
+        "model_path": "",
+        "num_inference_steps": 4,
+        "guidance_scale": 1.0
+    },
+    "SD3.5-large":
+    {
+        "model_path": "",
+        "num_inference_steps": 28,
+        "guidance_scale": 3.5
+    },
+    "Kolors":
+    {
+        "model_path": "",
+        "num_inference_steps": 50,
+        "guidance_scale": 5.0
+    }
+    
+}
