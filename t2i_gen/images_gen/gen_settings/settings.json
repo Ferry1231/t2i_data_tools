@@ -1,7 +1,8 @@
 {
     "Z-Image-Turbo":
     {
-        "model_path": "",
+        "model_path": "/root/fengyuan/models/Z-Image-Turbo",
+        "negative_prompt": "低分辨率，低画质，肢体畸形，手指畸形，画面过饱和，蜡像感，人脸无细节，过度光滑，画面具有AI感。构图混乱。文字模糊，扭曲。",
         "num_inference_steps": 9,
         "guidance_scale": 0.0
     },
@@ -14,13 +15,13 @@
     },
     "Qwen-Image-2512":
     {
-        "model_path": "",
+        "model_path": "/root/fengyuan/models/Qwen-Image-2512",
         "num_inference_steps": 50,
         "guidance_scale": 4.0
     },
     "FLUX.1-dev":
     {
-        "model_path": "",
+        "model_path": "/root/fengyuan/models/FLUX.1-dev",
         "num_inference_steps": 50,
         "guidance_scale": 3.5
     },
@@ -51,7 +52,7 @@
     },
     "FLUX.2-klein-9B":
     {
-        "model_path": "",
+        "model_path": "/root/fengyuan/models/FLUX.2-klein-9B",
         "num_inference_steps": 4,
         "guidance_scale": 1.0
     },
@@ -69,9 +70,15 @@
     },
     "SD3.5-large":
     {
-        "model_path": "",
+        "model_path": "/root/fengyuan/models/SD3.5-large",
         "num_inference_steps": 28,
         "guidance_scale": 3.5
+    },
+    "SD3.5-medium":
+    {
+        "model_path": "/root/fengyuan/models/SD3.5-medium",
+        "num_inference_steps": 40,
+        "guidance_scale": 4.5
     },
     "Kolors":
     {
