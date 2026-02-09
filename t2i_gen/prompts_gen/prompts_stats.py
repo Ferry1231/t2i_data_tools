@@ -2,7 +2,7 @@ import json
 import matplotlib.pyplot as plt
 
 # 修改为你的JSON文件路径
-json_path = "/root/fengyuan/datasets/HPDv3/test_rewritten.json"
+json_path = "/root/fengyuan/datasets/vision_auto_rubric/prompts/train_t.json"
 
 def main():
     with open(json_path, "r", encoding="utf-8") as f:
